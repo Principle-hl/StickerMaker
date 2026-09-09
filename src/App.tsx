@@ -6,7 +6,8 @@ import { sourceFromFile } from './lib/artwork';
 import type { Source } from './lib/artwork';
 import { load, save } from './lib/storage';
 import { targetById } from './lib/targets';
-import { BUILD_ID, useUpdateAvailable } from './lib/updates';
+import { useInstallPrompt } from './lib/install';
+import { BUILD_ID, useAppUpdate } from './lib/updates';
 import type { TargetId } from './lib/targets';
 import type { Bg, Params, Settings } from './types';
 
@@ -21,7 +22,8 @@ export default function App() {
   const [bg, setBg] = useState<Bg>('light');
 
   const result = useCutline(source, widthMm, params, settings);
-  const updateAvailable = useUpdateAvailable();
+  const update = useAppUpdate();
+  const install = useInstallPrompt();
 
   // A new artwork forgets the width override; the file (or the default) speaks again.
   const replaceSource = useCallback((next: Source | null) => {
@@ -108,6 +110,7 @@ export default function App() {
         cutUrl={result.cutUrl}
         onExportPng={() => void result.exportPng()}
         exportingPng={result.exportingPng}
+        onInstall={install.canInstall ? install.prompt : null}
       />
       <Preview
         bg={bg}
@@ -121,7 +124,8 @@ export default function App() {
         settings={settings}
         error={result.error}
         onFile={readFile}
-        updateAvailable={updateAvailable}
+        updateAvailable={update.available}
+        onUpdate={update.apply}
       />
     </div>
   );

@@ -42,6 +42,19 @@ For VersaWorks, RasterLink, Onyx and Caldera, open `sticker.svg` in Illustrator,
 apply the `CutContour` spot swatch to the cut path and save as PDF or EPS. A
 direct PDF export with a real spot colour is the next thing on the list.
 
+## Installing it as an app
+
+It is a progressive web app. Open the live URL and:
+
+- **Chrome / Edge / Brave:** click "Install as an app" at the bottom of the
+  sidebar, or the install icon in the address bar.
+- **Safari on macOS:** File → Add to Dock. **Safari on iOS:** Share → Add to
+  Home Screen.
+
+You get a Dock icon and a window of its own, and it keeps working offline. When a
+new build is deployed, open windows show "New version available · Reload"; the
+reload is safe because everything you set is kept in localStorage.
+
 ## Running it
 
 ```bash
@@ -52,9 +65,10 @@ npm run preview    # serve dist/ locally
 ```
 
 Deploys happen automatically: every push to `main` builds and publishes to
-GitHub Pages (`.github/workflows/deploy.yml`). Open tabs poll `version.json`
-and show a "New version available" prompt when a newer build is live; a reload
-picks it up, and all state lives in localStorage so nothing is lost.
+GitHub Pages (`.github/workflows/deploy.yml`). Updates reach open windows two
+ways: the service worker notices a new `sw.js` and waits for the user to say
+"Reload", and, as a fallback for browsers without a worker, the page polls a
+never-cached `version.json`. Both feed the same prompt.
 
 ## How it works
 
@@ -88,7 +102,7 @@ tier 1400 px.
 | `src/lib/export.ts` | Sticker SVG, cut line SVG, print PNG. |
 | `src/lib/tracer.ts`, `src/workers/trace.worker.ts` | Worker wrapper with latest-wins scheduling; the worker itself. |
 | `src/hooks/useCutline.ts` | The pipeline: mm → mask units, preview and final tiers, export blobs. |
-| `src/lib/updates.ts` | New-build detection. |
+| `src/lib/updates.ts`, `src/lib/install.ts` | New-build detection (service worker + `version.json`); the install button. |
 | `src/components/` | Sidebar (Artwork, Contour, Output, downloads) and Preview (inline SVG sticker, drop target). |
 | `docs/handoff.md` | The original design handoff and prototype this was built from. |
 

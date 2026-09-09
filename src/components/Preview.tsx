@@ -17,6 +17,7 @@ interface PreviewProps {
   onFile: (file: File | undefined) => void;
   /** A newer build is deployed; offer a reload. */
   updateAvailable: boolean;
+  onUpdate: () => void;
 }
 
 const BACKGROUNDS: { key: Bg; label: string }[] = [
@@ -25,7 +26,7 @@ const BACKGROUNDS: { key: Bg; label: string }[] = [
   { key: 'grid', label: 'Grid' },
 ];
 
-export default function Preview({ bg, onBg, cutD, bleedD, logoUrl, vb, margin, strokeWidth, settings, error, onFile, updateAvailable }: PreviewProps) {
+export default function Preview({ bg, onBg, cutD, bleedD, logoUrl, vb, margin, strokeWidth, settings, error, onFile, updateAvailable, onUpdate }: PreviewProps) {
   // dragenter/dragleave fire for every child; count them so the overlay does not flicker.
   const [dragDepth, setDragDepth] = useState(0);
   const dragging = dragDepth > 0;
@@ -80,7 +81,7 @@ export default function Preview({ bg, onBg, cutD, bleedD, logoUrl, vb, margin, s
       )}
 
       {updateAvailable ? (
-        <button type="button" className="update-pill" onClick={() => location.reload()}>
+        <button type="button" className="update-pill" onClick={onUpdate}>
           New version available · <b>Reload</b>
         </button>
       ) : null}

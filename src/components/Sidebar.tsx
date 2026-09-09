@@ -28,6 +28,8 @@ interface SidebarProps {
   cutUrl: string | null;
   onExportPng: () => void;
   exportingPng: boolean;
+  /** Present when the browser can install the app; null otherwise. */
+  onInstall: (() => void) | null;
 }
 
 const mm1 = (v: number) => `${v.toFixed(1)} mm`;
@@ -266,6 +268,11 @@ export default function Sidebar(p: SidebarProps) {
         <a className="tile" href={p.cutUrl ?? undefined} download="cutline.svg" aria-disabled={!p.cutUrl}>
           Download cut line SVG
         </a>
+        {p.onInstall ? (
+          <button type="button" className="tile tile-quiet" onClick={p.onInstall}>
+            Install as an app
+          </button>
+        ) : null}
       </footer>
     </aside>
   );

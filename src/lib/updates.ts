@@ -1,19 +1,44 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { useRegisterSW } from 'virtual:pwa-register/react';
 
 /** Identifies the build this page was served from. */
 export const BUILD_ID: string = __BUILD_ID__;
 
 const POLL_MS = 5 * 60 * 1000;
 const FIRST_CHECK_MS = 60 * 1000;
+const SW_CHECK_MS = 60 * 60 * 1000;
+
+export interface AppUpdate {
+  /** True once a newer build is live. */
+  available: boolean;
+  /** Switch to the new build. Reloads the page; all state is in localStorage. */
+  apply: () => void;
+}
 
 /**
- * True once a newer build is live. Polls `version.json` (emitted at build time
- * next to the bundle) every few minutes, when the tab regains focus and when the
- * network comes back. A reload picks up the new build; all state is in
- * localStorage, so nothing is lost. Never fires under the dev server.
+ * New-build detection with two sources:
+ *
+ * 1. The service worker (installed app, offline-capable). Workbox notices a new
+ *    `sw.js`, installs it in the background and waits; `needRefresh` flips and
+ *    `apply` tells it to take over, which reloads the page.
+ * 2. `version.json`, emitted at build time next to the bundle and never cached.
+ *    Polled every few minutes, on focus and when the network returns. Covers
+ *    browsers without a service worker and the window before one is registered.
+ *
+ * Never fires under the dev server.
  */
-export function useUpdateAvailable(): boolean {
-  const [available, setAvailable] = useState(false);
+export function useAppUpdate(): AppUpdate {
+  const [versionChanged, setVersionChanged] = useState(false);
+
+  const {
+    needRefresh: [needRefresh],
+    updateServiceWorker,
+  } = useRegisterSW({
+    onRegisteredSW(_url, registration) {
+      if (!registration) return;
+      setInterval(() => void registration.update(), SW_CHECK_MS);
+    },
+  });
 
   useEffect(() => {
     if (import.meta.env.DEV) return;
@@ -24,7 +49,7 @@ export function useUpdateAvailable(): boolean {
         const res = await fetch(`${import.meta.env.BASE_URL}version.json?t=${Date.now()}`, { cache: 'no-store' });
         if (!res.ok) return;
         const { build } = (await res.json()) as { build?: string };
-        if (!stopped && build && build !== BUILD_ID) setAvailable(true);
+        if (!stopped && build && build !== BUILD_ID) setVersionChanged(true);
       } catch {
         // Offline or blocked; try again on the next tick.
       }
@@ -46,5 +71,16 @@ export function useUpdateAvailable(): boolean {
     };
   }, []);
 
-  return available;
+  const apply = useCallback(() => {
+    if (needRefresh) {
+      // Tells the waiting worker to take over; workbox reloads on controllerchange.
+      // If that event never comes (page not yet controlled), reload anyway.
+      void updateServiceWorker(true);
+      setTimeout(() => location.reload(), 1500);
+    } else {
+      location.reload();
+    }
+  }, [needRefresh, updateServiceWorker]);
+
+  return { available: needRefresh || versionChanged, apply };
 }
