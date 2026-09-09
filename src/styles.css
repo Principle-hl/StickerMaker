@@ -1,0 +1,626 @@
+/* ------------------------------------------------------------------
+   Tokens. One ground, one text, two greys, one well, one raised surface.
+   The only accent in the app is the cut line itself, drawn on the paper.
+   ------------------------------------------------------------------ */
+:root {
+  --ground: #171614;
+  --surface: #211f1c;
+  --surface-hover: #292622;
+  --well: #0f0e0d;
+  --line: #2a2825;
+  --text: #ece9e2;
+  --text-2: #9a958c;
+  --text-3: #86817a;
+  --code: #c9c4ba;
+
+  --paper-light: #f3f1ec;
+  --paper-dark: #232120;
+  --paper-grid: conic-gradient(#e4e1da 25%, #f7f5f0 0 50%, #e4e1da 0 75%, #f7f5f0 0) 0 0 / 24px 24px;
+
+  --radius: 6px;
+  --font-ui: 'Instrument Sans', Helvetica, Arial, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* Rhythm */
+  --pad: 24px;
+  --gap-group: 24px;
+  --gap-field: 12px;
+  --gap-tight: 8px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--text);
+  font: 13px/1.45 var(--font-ui);
+  -webkit-font-smoothing: antialiased;
+}
+
+:focus-visible {
+  outline: 1px solid var(--text-2);
+  outline-offset: 2px;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ---------- layout ---------- */
+
+.app {
+  display: flex;
+  flex-wrap: wrap;
+  min-height: 100vh;
+  background: var(--ground);
+}
+
+.sidebar {
+  flex: 1 1 280px;
+  max-width: 360px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-group);
+  /* Bottom padding lives on the pinned footer: a sticky child cannot enter its parent's padding. */
+  padding: var(--pad) var(--pad) 0;
+  position: sticky;
+  top: 0;
+  align-self: flex-start;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+/* ---------- intro ---------- */
+
+.title {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+
+.lede {
+  margin: 6px 0 0;
+  color: var(--text-2);
+  max-width: 34em;
+  text-wrap: pretty;
+}
+
+/* ---------- groups ---------- */
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-field);
+}
+
+.eyebrow {
+  margin: 0 0 -2px;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  line-height: 1.2;
+}
+
+.row {
+  display: flex;
+  gap: var(--gap-tight);
+}
+
+/* Label, chips, hex on one line; the label absorbs the free space so the
+   chips and readout stay pinned right regardless of label length. */
+.color-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.color-row > span:first-child {
+  flex: 1;
+}
+
+.color-row .readout {
+  min-width: 7ch;
+  text-align: right;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+}
+
+.field-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.readout {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-2);
+  white-space: nowrap;
+}
+
+.help {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--text-3);
+}
+
+/* ---------- inputs ---------- */
+
+.code {
+  width: 100%;
+  height: 84px;
+  min-height: 52px;
+  resize: vertical;
+  background: var(--well);
+  color: var(--code);
+  border: 0;
+  border-radius: var(--radius);
+  padding: 10px 12px;
+  font: 11px/1.5 var(--font-mono);
+  white-space: pre;
+}
+
+.code::placeholder {
+  color: var(--text-3);
+}
+
+.code:focus-visible {
+  outline: 1px solid var(--text-3);
+  outline-offset: 0;
+}
+
+input[type='range'] {
+  width: 100%;
+  margin: 6px 0 0;
+  accent-color: var(--text);
+  cursor: pointer;
+}
+
+.check {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.check input {
+  accent-color: var(--text);
+  width: 16px;
+  height: 16px;
+  margin: 0;
+}
+
+.chips {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 20px;
+}
+
+.chip {
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+  /* A hairline so a ground-coloured chip still reads as a chip. */
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+}
+
+.chip[aria-pressed='true'] {
+  box-shadow:
+    0 0 0 2px var(--ground),
+    0 0 0 3px var(--text);
+}
+
+.chip-input {
+  background: none;
+  overflow: hidden;
+}
+
+.chip-input::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.chip-input::-webkit-color-swatch,
+.chip-input::-moz-color-swatch {
+  border: 0;
+  border-radius: 50%;
+}
+
+/* ---------- tiles (buttons and links) ---------- */
+
+.tile {
+  display: block;
+  text-align: center;
+  text-decoration: none;
+  font: 500 13px/1.2 var(--font-ui);
+  padding: 10px 12px;
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.tile:hover {
+  background: var(--surface-hover);
+}
+
+.tile-grow {
+  flex: 1;
+}
+
+.tile-quiet {
+  color: var(--text-2);
+}
+
+.tile-primary {
+  background: var(--text);
+  color: var(--ground);
+  font-weight: 600;
+  padding: 11px 12px;
+}
+
+.tile-primary:hover {
+  background: #ffffff;
+}
+
+.tile[aria-disabled='true'] {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+/* ---------- footer ---------- */
+
+.footer {
+  position: sticky;
+  bottom: 0;
+  margin-top: auto;
+  padding-top: 16px;
+  padding-bottom: var(--pad);
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-tight);
+  background: var(--ground);
+}
+
+/* Content scrolling under the pinned footer fades out instead of being sliced. */
+.footer::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -24px;
+  height: 24px;
+  background: linear-gradient(transparent, var(--ground));
+  pointer-events: none;
+}
+
+.notes {
+  margin: -4px 0 4px;
+  padding: 0;
+  list-style: none;
+  font-size: 12px;
+  color: var(--text-2);
+}
+
+.notes li + li {
+  margin-top: 2px;
+}
+
+.stats {
+  margin: 0 0 2px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-2);
+  min-height: 17px;
+}
+
+/* Provisional numbers (quick pass shown, full pass still running) sit one step back. */
+.stats[data-refining] {
+  color: var(--text-3);
+}
+
+.tile:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* ---------- artwork extras ---------- */
+
+.raster-card {
+  height: auto;
+  min-height: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  white-space: normal;
+  resize: none;
+}
+
+.raster-name {
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.raster-meta {
+  color: var(--text-3);
+  white-space: nowrap;
+}
+
+.size-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.size-row > label {
+  flex: 1;
+}
+
+.num-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--well);
+  border-radius: var(--radius);
+  padding: 0 8px 0 0;
+}
+
+.num {
+  width: 64px;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font: 12px/1 var(--font-mono);
+  padding: 6px 0 6px 8px;
+  text-align: right;
+  -moz-appearance: textfield;
+}
+
+.num::-webkit-outer-spin-button,
+.num::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.num:disabled {
+  color: var(--text-3);
+}
+
+.num:focus-visible {
+  outline: none;
+}
+
+.num-wrap:focus-within {
+  outline: 1px solid var(--text-3);
+}
+
+.unit {
+  font-size: 12px;
+  color: var(--text-3);
+}
+
+.warnings {
+  margin: 0;
+  padding: 0 0 0 10px;
+  list-style: none;
+  border-left: 2px solid var(--text-3);
+  font-size: 12px;
+  color: var(--text-2);
+}
+
+.warnings li + li {
+  margin-top: 4px;
+}
+
+/* ---------- select ---------- */
+
+.select-wrap {
+  position: relative;
+  display: block;
+  margin-top: 6px;
+}
+
+.select {
+  width: 100%;
+  appearance: none;
+  -webkit-appearance: none;
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  font: 500 13px/1.2 var(--font-ui);
+  padding: 9px 32px 9px 12px;
+  cursor: pointer;
+}
+
+.select:hover {
+  background: var(--surface-hover);
+}
+
+.select-wrap::after {
+  content: '';
+  position: absolute;
+  right: 13px;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  border-right: 1.5px solid var(--text-2);
+  border-bottom: 1.5px solid var(--text-2);
+  transform: translateY(-70%) rotate(45deg);
+  pointer-events: none;
+}
+
+/* "No fill" chip: the paper showing through. */
+.chip-none {
+  background:
+    linear-gradient(to top right, transparent calc(50% - 0.75px), var(--text-2) calc(50% - 0.75px), var(--text-2) calc(50% + 0.75px), transparent calc(50% + 0.75px)),
+    var(--well);
+}
+
+/* ---------- stage ---------- */
+
+.stage {
+  flex: 3 1 420px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 480px;
+  padding: 64px 40px 40px;
+  /* Text colour that clears 4.5:1 on each paper. */
+  --on-paper: #6f6a62;
+}
+
+.stage[data-bg='light'] {
+  background: var(--paper-light);
+}
+
+.stage[data-bg='dark'] {
+  background: var(--paper-dark);
+  --on-paper: var(--text-2);
+}
+
+.stage[data-bg='grid'] {
+  background: var(--paper-grid);
+}
+
+.sticker {
+  --ar: 1;
+  width: min(100%, calc((100vh - 128px) * var(--ar)));
+  aspect-ratio: var(--ar);
+  filter: drop-shadow(0 6px 18px rgba(0, 0, 0, 0.18));
+}
+
+.sticker svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.stage-note {
+  margin: 0;
+  font-size: 14px;
+  color: var(--on-paper);
+  text-align: center;
+  max-width: 320px;
+  text-wrap: pretty;
+}
+
+.segmented {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  border-radius: var(--radius);
+  background: var(--ground);
+}
+
+.segmented button {
+  font: 500 12px/1.2 var(--font-ui);
+  padding: 6px 10px;
+  border: 0;
+  border-radius: calc(var(--radius) - 3px);
+  cursor: pointer;
+  color: var(--text-2);
+  background: transparent;
+}
+
+.segmented button:hover {
+  color: var(--text);
+}
+
+.segmented button[aria-pressed='true'] {
+  background: var(--surface-hover);
+  color: var(--text);
+}
+
+/* Drop target feedback: the paper recedes and the instruction sits on top. */
+.stage[data-dragging] > :not(.drop-hint) {
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+.drop-hint {
+  position: absolute;
+  inset: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px dashed var(--on-paper);
+  border-radius: var(--radius);
+  font-size: 14px;
+  color: var(--on-paper);
+  pointer-events: none;
+}
+
+/* Below the flex-basis sum (280 + 420) the panes stack: the sidebar spans the
+   full width, scrolls with the page, and hands off to the stage below. */
+@media (max-width: 700px) {
+  .sidebar {
+    max-width: none;
+    position: static;
+    height: auto;
+    overflow: visible;
+  }
+
+  .footer {
+    position: static;
+  }
+
+  .footer::before {
+    display: none;
+  }
+
+  .sticker {
+    width: min(100%, calc(70vh * var(--ar)));
+  }
+}
+
+/* ---------- update prompt ---------- */
+
+.update-pill {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  font: 500 12px/1.2 var(--font-ui);
+  padding: 8px 12px;
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--ground);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.update-pill:hover {
+  background: var(--surface);
+}
+
+.update-pill b {
+  font-weight: 600;
+}

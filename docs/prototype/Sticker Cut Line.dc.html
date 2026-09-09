@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<style>
+html,body{margin:0;background:#171614;color:#ece9e2;font-family:'Instrument Sans',Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:#ece9e2}a:hover{color:#ff4fd8}
+input[type=range]{width:100%;margin:6px 0 0;accent-color:#ff4fd8;cursor:pointer}
+textarea:focus{outline:1px solid #ff4fd8}
+</style>
+</helmet>
+<div style="display:flex;flex-wrap:wrap;min-height:100vh;background:#171614">
+  <aside style="flex:1 1 280px;max-width:360px;display:flex;flex-direction:column;gap:22px;padding:24px 22px;border-right:1px solid #2a2825;box-sizing:border-box">
+    <div>
+      <div style="font-size:17px;font-weight:600;letter-spacing:-0.01em">Sticker cut line</div>
+      <div style="font-size:13px;color:#9a958c;margin-top:4px;text-wrap:pretty">Paste any SVG (⌘V anywhere on this page), drop a file, or edit the code below. The contour updates live.</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <textarea value="{{ svgText }}" onChange="{{ onText }}" spellCheck="false" placeholder="&lt;svg …&gt;" style="width:100%;height:120px;box-sizing:border-box;resize:vertical;background:#0f0e0d;color:#c9c4ba;border:1px solid #2a2825;border-radius:6px;padding:10px;font:11px/1.45 'JetBrains Mono',monospace;white-space:pre"></textarea>
+      <div style="display:flex;gap:8px">
+        <input id="svgfile" type="file" accept=".svg,image/svg+xml" onChange="{{ onFile }}" style="display:none">
+        <label for="svgfile" style="flex:1;text-align:center;font-size:13px;font-weight:500;padding:8px 10px;border:1px solid #3a372f;border-radius:6px;cursor:pointer;color:#ece9e2">Open SVG file…</label>
+        <button onClick="{{ onClear }}" style="font-size:13px;padding:8px 12px;border:1px solid #3a372f;background:none;border-radius:6px;cursor:pointer;color:#9a958c;font-family:inherit">Clear</button>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:16px">
+      <div>
+        <div style="display:flex;justify-content:space-between;font-size:13px"><span>Offset (bleed)</span><span style="font-family:'JetBrains Mono',monospace;color:#9a958c">{{ offsetLabel }}</span></div>
+        <input type="range" min="0" max="12" step="0.1" value="{{ offsetPct }}" onChange="{{ setOffset }}">
+      </div>
+      <div>
+        <div style="display:flex;justify-content:space-between;font-size:13px"><span>Join gaps</span><span style="font-family:'JetBrains Mono',monospace;color:#9a958c">{{ joinLabel }}</span></div>
+        <input type="range" min="0" max="15" step="0.1" value="{{ joinPct }}" onChange="{{ setJoin }}">
+        <div style="font-size:12px;color:#6f6a62;margin-top:4px">Bridges separate shapes into one liquid outline.</div>
+      </div>
+      <div>
+        <div style="display:flex;justify-content:space-between;font-size:13px"><span>Smoothing</span><span style="font-family:'JetBrains Mono',monospace;color:#9a958c">{{ smoothLabel }}</span></div>
+        <input type="range" min="0" max="3" step="0.05" value="{{ smoothPct }}" onChange="{{ setSmooth }}">
+      </div>
+      <label style="display:flex;align-items:center;gap:10px;font-size:13px;cursor:pointer">
+        <input type="checkbox" checked="{{ fillHoles }}" onChange="{{ toggleFill }}" style="accent-color:#ff4fd8;width:16px;height:16px;margin:0">
+        <span>Fill enclosed holes (e, o, a…)</span>
+      </label>
+    </div>
+    <div style="margin-top:auto;display:flex;flex-direction:column;gap:10px">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#9a958c;min-height:16px">{{ statsLabel }}</div>
+      <a href="{{ stickerUrl }}" download="sticker.svg" style="display:block;text-align:center;text-decoration:none;font-size:14px;font-weight:600;padding:11px;border-radius:6px;background:#ece9e2;color:#171614" style-hover="background:#ffffff;color:#171614">Download sticker SVG</a>
+      <a href="{{ cutUrl }}" download="cutline.svg" style="display:block;text-align:center;text-decoration:none;font-size:13px;font-weight:500;padding:10px;border-radius:6px;border:1px solid #3a372f;color:#ece9e2" style-hover="border-color:#ff4fd8;color:#ece9e2">Cut line only</a>
+    </div>
+  </aside>
+  <main onDragOver="{{ onDragOver }}" onDrop="{{ onDrop }}" style="flex:3 1 420px;position:relative;display:flex;align-items:center;justify-content:center;min-height:480px;padding:56px 40px 40px;box-sizing:border-box;background: {{ previewBg }}">
+    <div style="position:absolute;top:16px;right:16px;display:flex;gap:2px;padding:3px;border-radius:7px;background:#171614;border:1px solid #2a2825">
+      <button onClick="{{ bgLight }}" style="font:500 12px 'Instrument Sans',sans-serif;padding:5px 10px;border:0;border-radius:5px;cursor:pointer;color:#ece9e2;background: {{ lightBtn }}">Light</button>
+      <button onClick="{{ bgDark }}" style="font:500 12px 'Instrument Sans',sans-serif;padding:5px 10px;border:0;border-radius:5px;cursor:pointer;color:#ece9e2;background: {{ darkBtn }}">Dark</button>
+      <button onClick="{{ bgGrid }}" style="font:500 12px 'Instrument Sans',sans-serif;padding:5px 10px;border:0;border-radius:5px;cursor:pointer;color:#ece9e2;background: {{ gridBtn }}">Grid</button>
+    </div>
+    <sc-if value="{{ hasResult }}" hint-placeholder-val="{{ false }}">
+      <img src="{{ previewSrc }}" alt="Sticker preview" style="max-width:100%;max-height:calc(100vh - 120px);display:block;filter:drop-shadow(0 6px 18px rgba(0,0,0,0.18))">
+    </sc-if>
+    <sc-if value="{{ showEmpty }}" hint-placeholder-val="{{ true }}">
+      <div style="font-size:14px;color:#9a958c;text-align:center;max-width:320px;text-wrap:pretty">{{ emptyLabel }}</div>
+    </sc-if>
+    <sc-if value="{{ busy }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute;left:16px;top:16px;font:12px 'JetBrains Mono',monospace;color:#9a958c;background:#171614;border:1px solid #2a2825;border-radius:6px;padding:6px 10px">tracing…</div>
+    </sc-if>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;showCutLine&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Cut line&quot;},&quot;cutColor&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#ff00ff&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;#ff00ff&quot;,&quot;#ff3b30&quot;,&quot;#00b4ff&quot;,&quot;#1b1b1b&quot;],&quot;section&quot;:&quot;Cut line&quot;},&quot;lineWidth&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:1,&quot;min&quot;:0.5,&quot;max&quot;:10,&quot;step&quot;:0.5,&quot;unit&quot;:&quot;‰&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Cut line&quot;},&quot;stickerFill&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#ffffff&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Sticker&quot;}}">
+class Component extends DCLogic {
+  state = { svgText: '', offsetPct: 3, joinPct: 4, smoothPct: 0.5, fillHoles: true, bg: 'light', stickerUrl: null, cutUrl: null, stats: null, error: null, busy: false };
+  runId = 0;
+  async componentDidMount() {
+    this.lib = await import(new URL('./cutline.js', location.href).href);
+    this.onPaste = e => { const t = e.clipboardData?.getData('text') || ''; if (/<svg[\s>]/i.test(t) && e.target?.tagName !== 'TEXTAREA') { e.preventDefault(); this.setSvg(t); } };
+    document.addEventListener('paste', this.onPaste);
+    try { const r = await fetch('uploads/Logo Green.svg'); if (r.ok) this.setSvg(await r.text()); } catch (e) {}
+  }
+  componentWillUnmount() { document.removeEventListener('paste', this.onPaste); clearTimeout(this.t); }
+  componentDidUpdate(pp) { if (pp.cutColor !== this.props.cutColor || pp.stickerFill !== this.props.stickerFill || pp.lineWidth !== this.props.lineWidth || pp.showCutLine !== this.props.showCutLine) this.publish(); }
+  setSvg(t) { this.setState({ svgText: t, error: null }, () => this.schedule()); }
+  schedule() { clearTimeout(this.t); this.t = setTimeout(() => this.run(), 120); }
+  async run() {
+    const { svgText, offsetPct, joinPct, smoothPct, fillHoles } = this.state;
+    if (!this.lib || !svgText.trim()) { this.last = null; this.setState({ stickerUrl: null, cutUrl: null, stats: null }); return; }
+    const id = ++this.runId; this.setState({ busy: true });
+    try {
+      const info = await this.lib.rasterize(svgText, { offset: offsetPct, join: joinPct, smooth: smoothPct });
+      if (id !== this.runId) return;
+      const res = this.lib.trace(info, fillHoles);
+      this.last = { info, d: this.lib.toPath(res.polys, info), res };
+      this.publish();
+    } catch (e) { if (id === this.runId) this.setState({ error: e.message, busy: false, stickerUrl: null, cutUrl: null, stats: null }); }
+  }
+  publish() {
+    if (!this.last) return;
+    const { info, d, res } = this.last, p = this.props;
+    const sw = p.lineWidth ? Math.max(info.vb[2], info.vb[3]) * p.lineWidth / 1000 : undefined;
+    const mk = s => URL.createObjectURL(new Blob([s], { type: 'image/svg+xml' }));
+    [this.state.stickerUrl, this.state.cutUrl].forEach(u => u && URL.revokeObjectURL(u));
+    this.setState({
+      busy: false, error: null,
+      stickerUrl: mk(this.lib.buildSvg(info, d, { cutColor: (p.showCutLine ?? true) ? (p.cutColor ?? '#ff00ff') : 'none', fill: p.stickerFill ?? '#ffffff', includeLogo: true, strokeWidth: sw })),
+      cutUrl: mk(this.lib.buildSvg(info, d, { cutColor: p.cutColor ?? '#ff00ff', fill: 'none', includeLogo: false, strokeWidth: sw })),
+      stats: { islands: res.islands, nodes: res.nodes, w: info.vb[2], h: info.vb[3] }
+    });
+  }
+  readFile(f) { if (f) f.text().then(t => this.setSvg(t)); }
+  renderVals() {
+    const s = this.state, base = this.last ? Math.max(this.last.info.vb[2], this.last.info.vb[3]) : null;
+    const units = pct => base ? `${(pct / 100 * base).toFixed(1)} u` : `${pct}%`;
+    const bgs = { light: '#f3f1ec', dark: '#232120', grid: 'conic-gradient(#e4e1da 25%, #f7f5f0 0 50%, #e4e1da 0 75%, #f7f5f0 0) 0 0 / 24px 24px' };
+    const btn = k => (s.bg === k ? '#3a372f' : 'transparent');
+    const upd = (key, cb) => e => this.setState({ [key]: e.target.type === 'checkbox' ? e.target.checked : +e.target.value }, () => this.schedule());
+    return {
+      svgText: s.svgText, offsetPct: s.offsetPct, joinPct: s.joinPct, smoothPct: s.smoothPct, fillHoles: s.fillHoles, busy: s.busy,
+      offsetLabel: units(s.offsetPct), joinLabel: units(s.joinPct), smoothLabel: units(s.smoothPct),
+      statsLabel: s.stats ? `${s.stats.islands} ${s.stats.islands === 1 ? 'island' : 'islands'} · ${s.stats.nodes} nodes · ${+s.stats.w.toFixed(1)}×${+s.stats.h.toFixed(1)} u` : '',
+      stickerUrl: s.stickerUrl, cutUrl: s.cutUrl, hasResult: !!s.stickerUrl, previewSrc: s.stickerUrl || 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22/%3E',
+      showEmpty: !s.stickerUrl && !s.busy, emptyLabel: s.error || 'Paste an SVG or drop a file here.',
+      previewBg: bgs[s.bg], lightBtn: btn('light'), darkBtn: btn('dark'), gridBtn: btn('grid'),
+      bgLight: () => this.setState({ bg: 'light' }), bgDark: () => this.setState({ bg: 'dark' }), bgGrid: () => this.setState({ bg: 'grid' }),
+      onText: e => this.setSvg(e.target.value), onClear: () => this.setSvg(''),
+      onFile: e => { this.readFile(e.target.files?.[0]); e.target.value = ''; },
+      onDragOver: e => e.preventDefault(), onDrop: e => { e.preventDefault(); this.readFile(e.dataTransfer.files?.[0]); },
+      setOffset: upd('offsetPct'), setJoin: upd('joinPct'), setSmooth: upd('smoothPct'), toggleFill: upd('fillHoles')
+    };
+  }
+}
+</script>
+</body>
+</html>
