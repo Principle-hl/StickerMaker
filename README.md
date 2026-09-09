@@ -97,3 +97,7 @@ tier 1400 px.
 - PDF export with a real `CutContour` separation (no Illustrator step for pro RIPs).
 - Kiss-cut plus through-cut contours for sheet stickers.
 - Batch export and sheet nesting.
+
+## License
+
+MIT. See [LICENSE](LICENSE).
