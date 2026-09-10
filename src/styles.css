@@ -90,6 +90,23 @@ body {
 
 /* ---------- intro ---------- */
 
+.title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.segmented-small {
+  padding: 2px;
+}
+
+.segmented-small button {
+  padding: 4px 7px;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+}
+
 .title {
   margin: 0;
   font-size: 17px;
@@ -533,7 +550,7 @@ input[type='range'] {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 8px 20px;
+  gap: 8px 16px;
   padding: 10px 16px;
   background: var(--ground);
 }
@@ -546,7 +563,7 @@ input[type='range'] {
 }
 
 .topbar-slider input[type='range'] {
-  width: 96px;
+  width: 80px;
   margin: 0;
 }
 

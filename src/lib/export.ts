@@ -72,14 +72,14 @@ export async function printPng(doc: StickerDoc, fill: string, dpi = 300): Promis
     const img = await new Promise<HTMLImageElement>((res, rej) => {
       const i = new Image();
       i.onload = () => res(i);
-      i.onerror = () => rej(new Error('Could not render the print layer.'));
+      i.onerror = () => rej(new Error('err.printRender'));
       i.src = url;
     });
     const cv = document.createElement('canvas');
     cv.width = Math.max(1, Math.round((f.widthMm / 25.4) * dpi));
     cv.height = Math.max(1, Math.round((f.heightMm / 25.4) * dpi));
     cv.getContext('2d')!.drawImage(img, 0, 0, cv.width, cv.height);
-    return await new Promise<Blob>((res, rej) => cv.toBlob(b => (b ? res(b) : rej(new Error('PNG encoding failed.'))), 'image/png'));
+    return await new Promise<Blob>((res, rej) => cv.toBlob(b => (b ? res(b) : rej(new Error('err.png'))), 'image/png'));
   } finally {
     URL.revokeObjectURL(url);
   }

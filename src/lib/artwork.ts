@@ -17,6 +17,7 @@ export interface Artwork {
   name: string | null;
   /** Physical width the file declares, in mm, or null when it only speaks pixels. */
   declaredWidthMm: number | null;
+  /** i18n keys (`warn.*`), translated at display time. */
   warnings: string[];
 }
 
@@ -25,7 +26,7 @@ function loadImage(blob: Blob): Promise<HTMLImageElement> {
     const url = URL.createObjectURL(blob);
     const img = new Image();
     img.onload = () => { URL.revokeObjectURL(url); res(img); };
-    img.onerror = () => { URL.revokeObjectURL(url); rej(new Error('The browser could not render this file.')); };
+    img.onerror = () => { URL.revokeObjectURL(url); rej(new Error('err.render')); };
     img.src = url;
   });
 }
@@ -87,7 +88,7 @@ function pngWidthMm(bytes: Uint8Array, widthPx: number): number | null {
 async function loadSvg(text: string): Promise<Artwork> {
   const doc = new DOMParser().parseFromString(text.trim(), 'image/svg+xml');
   const root = doc.documentElement;
-  if (doc.querySelector('parsererror') || root.nodeName.toLowerCase() !== 'svg') throw new Error('That is not valid SVG.');
+  if (doc.querySelector('parsererror') || root.nodeName.toLowerCase() !== 'svg') throw new Error('err.notSvg');
   root.querySelectorAll('metadata, script').forEach(n => n.remove());
 
   const warnings: string[] = [];
@@ -95,16 +96,16 @@ async function loadSvg(text: string): Promise<Artwork> {
   if (vb.length !== 4 || vb.some(n => !isFinite(n)) || vb[2] <= 0 || vb[3] <= 0) {
     const w = parseFloat(root.getAttribute('width') || '') || 100, h = parseFloat(root.getAttribute('height') || '') || 100;
     vb = [0, 0, w, h];
-    if (!root.getAttribute('width') || !root.getAttribute('height')) warnings.push('No viewBox or size in the file; 100 × 100 assumed.');
+    if (!root.getAttribute('width') || !root.getAttribute('height')) warnings.push('warn.noViewBox');
   }
   const box: ViewBox = [vb[0], vb[1], vb[2], vb[3]];
 
-  if (root.querySelector('text, tspan')) warnings.push('Contains live text. Fonts render with whatever this browser has; outline the text first.');
+  if (root.querySelector('text, tspan')) warnings.push('warn.text');
   const linked = [...root.querySelectorAll('image')].some(el => {
     const href = el.getAttribute('href') || el.getAttribute('xlink:href') || '';
     return href && !href.startsWith('data:');
   });
-  if (linked) warnings.push('Links to an external image, which will not load. Embed it in the SVG.');
+  if (linked) warnings.push('warn.linkedImage');
 
   const clone = cloneRoot(root, box);
   clone.setAttribute('width', String(box[2]));
@@ -128,7 +129,7 @@ async function loadRaster(dataUrl: string, name: string): Promise<Artwork> {
   const blob = await fetch(dataUrl).then(r => r.blob());
   const img = await loadImage(blob);
   const w = img.naturalWidth, h = img.naturalHeight;
-  if (!w || !h) throw new Error('The image has no size.');
+  if (!w || !h) throw new Error('err.noSize');
 
   const warnings: string[] = [];
   // Opaque images trace as a rectangle. Sample the alpha channel to say so up front.
@@ -140,7 +141,7 @@ async function loadRaster(dataUrl: string, name: string): Promise<Artwork> {
   const data = ctx.getImageData(0, 0, size, size).data;
   let transparent = 0;
   for (let i = 3; i < data.length; i += 4) if (data[i] <= 96) transparent++;
-  if (transparent === 0) warnings.push('No transparent pixels, so the whole image is treated as the shape. Use a PNG with a transparent background.');
+  if (transparent === 0) warnings.push('warn.opaque');
 
   const bytes = new Uint8Array(await blob.arrayBuffer());
   return {

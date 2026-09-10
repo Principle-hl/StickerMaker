@@ -29,6 +29,9 @@ Everything runs client-side. Nothing is uploaded anywhere.
 - **Instant.** A quick trace answers every slider tick in well under 100 ms; a
   full-resolution pass follows once you pause. Tracing runs in Web Workers, so
   the UI never stutters.
+- **Three languages.** English, German and Slovenian, picked from the browser
+  language and switchable in the top bar. Decimals follow the language
+  (`2,0 mm` in German and Slovenian).
 - **A real canvas.** Pan by dragging or scrolling, zoom with ⌘/Ctrl+scroll,
   pinch, or the − / + buttons; Shift+1 fits, Shift+0 is actual size (100% is
   true millimetres on a 96 dpi screen). Changing the offset or bleed grows the

@@ -82,7 +82,7 @@ export function rasterize(art: Drawable, pct: Pct, target = 1400): RasterInfo {
   const data = ctx.getImageData(0, 0, W, H).data;
   const mask = new Uint8Array(W * H); let ink = 0;
   for (let i = 0, n = W * H; i < n; i++) if (data[i * 4 + 3] > 96) { mask[i] = 1; ink++; }
-  if (!ink) throw new Error('The artwork rendered empty. No visible shapes.');
+  if (!ink) throw new Error('err.empty');
   return { ...geo, vb, mask };
 }
 

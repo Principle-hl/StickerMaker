@@ -3,6 +3,7 @@ import type { DragEvent } from 'react';
 import type { Artwork } from '../lib/artwork';
 import type { ViewBox } from '../lib/cutline';
 import type { Rect, Viewport } from '../hooks/useViewport';
+import { useT } from '../i18n';
 import type { Bg, Settings } from '../types';
 
 /** World pixels per millimetre: zoom 1 is actual size on a 96 dpi screen. */
@@ -28,6 +29,7 @@ interface CanvasProps {
 
 export default function Canvas(p: CanvasProps) {
   const { viewport, art } = p;
+  const { t, msg } = useT();
   // dragenter/dragleave fire for every child; count them so the overlay does not flicker.
   const [dragDepth, setDragDepth] = useState(0);
   const dropping = dragDepth > 0;
@@ -90,7 +92,7 @@ export default function Canvas(p: CanvasProps) {
             <svg
               viewBox={`${sticker.vb[0] - p.margin} ${sticker.vb[1] - p.margin} ${sticker.vb[2] + 2 * p.margin} ${sticker.vb[3] + 2 * p.margin}`}
               role="img"
-              aria-label="Sticker preview"
+              aria-label={t('preview')}
             >
               {fill !== 'none' ? <path d={sticker.bleedD ?? sticker.cutD} fill={fill} fillRule="evenodd" /> : null}
               <image href={sticker.logoUrl} x={sticker.vb[0]} y={sticker.vb[1]} width={sticker.vb[2]} height={sticker.vb[3]} />
@@ -102,15 +104,15 @@ export default function Canvas(p: CanvasProps) {
         ) : null}
       </div>
 
-      {!sticker ? <p className="stage-note">{p.error || 'Paste an SVG or PNG, or drop a file here.'}</p> : null}
+      {!sticker ? <p className="stage-note">{p.error ? msg(p.error) : t('emptyCanvas')}</p> : null}
 
       {p.updateAvailable ? (
         <button type="button" className="update-pill" onClick={p.onUpdate}>
-          New version available · <b>Reload</b>
+          {t('updateAvailable')} · <b>{t('reload')}</b>
         </button>
       ) : null}
 
-      {dropping ? <div className="drop-hint">Drop to load</div> : null}
+      {dropping ? <div className="drop-hint">{t('dropToLoad')}</div> : null}
     </main>
   );
 }

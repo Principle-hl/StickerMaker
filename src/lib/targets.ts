@@ -16,6 +16,7 @@ export interface Target {
   printPng: boolean;
   /** Suggested bleed for this workflow; null leaves the user's value alone. */
   bleedMm: number | null;
+  /** English note; the UI shows the translated `target.<id>` string. */
   note: string;
 }
 
