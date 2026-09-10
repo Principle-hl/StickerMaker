@@ -79,6 +79,15 @@ body {
   overflow-y: auto;
 }
 
+/* Top bar + canvas, stacked, filling the rest of the row. */
+.workspace {
+  flex: 3 1 420px;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-width: 0;
+}
+
 /* ---------- intro ---------- */
 
 .title {
@@ -90,10 +99,47 @@ body {
 }
 
 .lede {
-  margin: 6px 0 0;
+  margin: 0;
   color: var(--text-2);
   max-width: 34em;
   text-wrap: pretty;
+}
+
+/* ---------- tabs ---------- */
+
+.tabs {
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  margin-top: 14px;
+  border-radius: var(--radius);
+  background: var(--well);
+}
+
+.tabs button {
+  flex: 1;
+  font: 500 12px/1.2 var(--font-ui);
+  padding: 7px 10px;
+  border: 0;
+  border-radius: calc(var(--radius) - 3px);
+  cursor: pointer;
+  color: var(--text-2);
+  background: transparent;
+}
+
+.tabs button:hover {
+  color: var(--text);
+}
+
+.tabs button[aria-selected='true'] {
+  background: var(--surface-hover);
+  color: var(--text);
+}
+
+.tab-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-field);
 }
 
 /* ---------- groups ---------- */
@@ -481,18 +527,56 @@ input[type='range'] {
     var(--well);
 }
 
+/* ---------- top bar ---------- */
+
+.topbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  padding: 10px 16px;
+  background: var(--ground);
+}
+
+.topbar-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.topbar-slider input[type='range'] {
+  width: 96px;
+  margin: 0;
+}
+
+.topbar-spacer {
+  flex: 1;
+}
+
+.zoom-readout {
+  min-width: 52px;
+  font-family: var(--font-mono) !important;
+}
+
 /* ---------- stage ---------- */
 
 .stage {
-  flex: 3 1 420px;
+  flex: 1;
   position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  overflow: hidden;
   min-height: 480px;
-  padding: 64px 40px 40px;
+  cursor: grab;
+  touch-action: none;
   /* Text colour that clears 4.5:1 on each paper. */
   --on-paper: #6f6a62;
+  --grid-size: 24px;
+  --grid-x: 0px;
+  --grid-y: 0px;
+}
+
+.stage[data-dragging] {
+  cursor: grabbing;
 }
 
 .stage[data-bg='light'] {
@@ -504,15 +588,24 @@ input[type='range'] {
   --on-paper: var(--text-2);
 }
 
+/* The grid is drawn in world space: it pans and rescales with the sticker. */
 .stage[data-bg='grid'] {
-  background: var(--paper-grid);
+  background: conic-gradient(#e4e1da 25%, #f7f5f0 0 50%, #e4e1da 0 75%, #f7f5f0 0) var(--grid-x) var(--grid-y) / var(--grid-size) var(--grid-size);
+}
+
+.world {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform-origin: 0 0;
+  will-change: transform;
+  --inv: 1;
 }
 
 .sticker {
-  --ar: 1;
-  width: min(100%, calc((100vh - 128px) * var(--ar)));
-  aspect-ratio: var(--ar);
-  filter: drop-shadow(0 6px 18px rgba(0, 0, 0, 0.18));
+  position: absolute;
+  /* Shadow stays the same size on screen at any zoom. */
+  filter: drop-shadow(0 calc(6px * var(--inv)) calc(18px * var(--inv)) rgba(0, 0, 0, 0.18));
 }
 
 .sticker svg {
@@ -522,23 +615,25 @@ input[type='range'] {
 }
 
 .stage-note {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
   margin: 0;
   font-size: 14px;
   color: var(--on-paper);
   text-align: center;
   max-width: 320px;
   text-wrap: pretty;
+  pointer-events: none;
 }
 
 .segmented {
-  position: absolute;
-  top: 16px;
-  right: 16px;
   display: flex;
   gap: 2px;
   padding: 3px;
   border-radius: var(--radius);
-  background: var(--ground);
+  background: var(--well);
 }
 
 .segmented button {
@@ -561,7 +656,7 @@ input[type='range'] {
 }
 
 /* Drop target feedback: the paper recedes and the instruction sits on top. */
-.stage[data-dragging] > :not(.drop-hint) {
+.stage[data-dropping] > :not(.drop-hint) {
   opacity: 0.35;
   pointer-events: none;
 }
@@ -595,6 +690,14 @@ input[type='range'] {
 
   .footer::before {
     display: none;
+  }
+
+  .workspace {
+    min-height: 0;
+  }
+
+  .stage {
+    min-height: 70vh;
   }
 
   .sticker {

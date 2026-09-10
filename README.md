@@ -29,6 +29,10 @@ Everything runs client-side. Nothing is uploaded anywhere.
 - **Instant.** A quick trace answers every slider tick in well under 100 ms; a
   full-resolution pass follows once you pause. Tracing runs in Web Workers, so
   the UI never stutters.
+- **A real canvas.** Pan by dragging or scrolling, zoom with ⌘/Ctrl+scroll,
+  pinch, or the − / + buttons; Shift+1 fits, Shift+0 is actual size (100% is
+  true millimetres on a 96 dpi screen). Changing the offset or bleed grows the
+  frame around the artwork instead of rescaling it.
 
 ## Exports
 
@@ -103,7 +107,8 @@ tier 1400 px.
 | `src/lib/tracer.ts`, `src/workers/trace.worker.ts` | Worker wrapper with latest-wins scheduling; the worker itself. |
 | `src/hooks/useCutline.ts` | The pipeline: mm → mask units, preview and final tiers, export blobs. |
 | `src/lib/updates.ts`, `src/lib/install.ts` | New-build detection (service worker + `version.json`); the install button. |
-| `src/components/` | Sidebar (Artwork, Contour, Output, downloads) and Preview (inline SVG sticker, drop target). |
+| `src/components/` | Sidebar (Artwork / Contour / Output tabs, downloads), TopBar (cut line, colours, width, fill, background, zoom) and Canvas (inline SVG sticker on a pan/zoom world, drop target). |
+| `src/hooks/useViewport.ts` | Figma-style pan and zoom: wheel, pinch, drag, keyboard; transform written to the DOM, not through state. |
 | `docs/handoff.md` | The original design handoff and prototype this was built from. |
 
 ## Roadmap

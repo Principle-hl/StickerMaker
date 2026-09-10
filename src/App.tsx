@@ -1,14 +1,16 @@
 import { useCallback, useEffect, useState } from 'react';
-import Preview from './components/Preview';
+import Canvas from './components/Canvas';
 import Sidebar from './components/Sidebar';
+import TopBar from './components/TopBar';
 import { useCutline } from './hooks/useCutline';
+import { useViewport } from './hooks/useViewport';
 import { sourceFromFile } from './lib/artwork';
 import type { Source } from './lib/artwork';
+import { useInstallPrompt } from './lib/install';
 import { load, save } from './lib/storage';
 import { targetById } from './lib/targets';
-import { useInstallPrompt } from './lib/install';
-import { BUILD_ID, useAppUpdate } from './lib/updates';
 import type { TargetId } from './lib/targets';
+import { BUILD_ID, useAppUpdate } from './lib/updates';
 import type { Bg, Params, Settings } from './types';
 
 const SAMPLE_URL = `${import.meta.env.BASE_URL}samples/logo-green.svg`;
@@ -22,6 +24,7 @@ export default function App() {
   const [bg, setBg] = useState<Bg>('light');
 
   const result = useCutline(source, widthMm, params, settings);
+  const viewport = useViewport();
   const update = useAppUpdate();
   const install = useInstallPrompt();
 
@@ -86,6 +89,8 @@ export default function App() {
 
   useEffect(() => save({ source, widthMm, params, settings }), [source, widthMm, params, settings]);
 
+  const onSettings = (patch: Partial<Settings>) => setSettings(prev => ({ ...prev, ...patch }));
+
   return (
     <div className="app" data-build={BUILD_ID}>
       <Sidebar
@@ -101,7 +106,7 @@ export default function App() {
         params={params}
         onParams={patch => setParams(prev => ({ ...prev, ...patch }))}
         settings={settings}
-        onSettings={patch => setSettings(prev => ({ ...prev, ...patch }))}
+        onSettings={onSettings}
         onTarget={applyTarget}
         stats={result.stats}
         notes={result.notes}
@@ -112,21 +117,36 @@ export default function App() {
         exportingPng={result.exportingPng}
         onInstall={install.canInstall ? install.prompt : null}
       />
-      <Preview
-        bg={bg}
-        onBg={setBg}
-        cutD={result.cutD}
-        bleedD={result.bleedD}
-        logoUrl={result.logoUrl}
-        vb={result.vb}
-        margin={result.margin}
-        strokeWidth={result.strokeWidth}
-        settings={settings}
-        error={result.error}
-        onFile={readFile}
-        updateAvailable={update.available}
-        onUpdate={update.apply}
-      />
+      <div className="workspace">
+        <TopBar
+          settings={settings}
+          onSettings={onSettings}
+          bg={bg}
+          onBg={setBg}
+          zoom={viewport.zoom}
+          onZoomIn={viewport.zoomIn}
+          onZoomOut={viewport.zoomOut}
+          onFit={viewport.fit}
+          onActualSize={viewport.actualSize}
+        />
+        <Canvas
+          bg={bg}
+          viewport={viewport}
+          art={result.art}
+          cutD={result.cutD}
+          bleedD={result.bleedD}
+          logoUrl={result.logoUrl}
+          vb={result.vb}
+          margin={result.margin}
+          unitsPerMm={result.unitsPerMm}
+          strokeWidth={result.strokeWidth}
+          settings={settings}
+          error={result.error}
+          onFile={readFile}
+          updateAvailable={update.available}
+          onUpdate={update.apply}
+        />
+      </div>
     </div>
   );
 }

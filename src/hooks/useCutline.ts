@@ -53,6 +53,8 @@ export interface CutlineResult {
   logoUrl: string | null;
   vb: ViewBox | null;
   margin: number;
+  /** SVG units per mm for the contour on screen (0 until one exists). */
+  unitsPerMm: number;
   stats: Stats | null;
   notes: CutNotes | null;
   quality: Quality | null;
@@ -272,6 +274,7 @@ export function useCutline(source: Source | null, widthMmOverride: number | null
     logoUrl: traced?.logoUrl ?? null,
     vb: traced?.vb ?? null,
     margin: traced?.margin ?? 0,
+    unitsPerMm: traced?.unitsPerMm ?? 0,
     stats: traced?.stats ?? null,
     notes: traced?.notes ?? null,
     quality: traced?.quality ?? null,
