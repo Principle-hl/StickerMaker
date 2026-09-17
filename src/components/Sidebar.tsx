@@ -31,6 +31,7 @@ interface SidebarProps {
   cutUrl: string | null;
   onExportPng: () => void;
   exportingPng: boolean;
+  pngPlan: { dpi: number; width: number; height: number } | null;
   /** Present when the browser can install the app; null otherwise. */
   onInstall: (() => void) | null;
 }
@@ -112,7 +113,7 @@ export default function Sidebar(p: SidebarProps) {
                 id="artfile"
                 className="visually-hidden"
                 type="file"
-                accept=".svg,image/svg+xml,image/png,image/webp,image/jpeg"
+                accept=".svg,image/svg+xml,image/*"
                 onChange={e => {
                   p.onFile(e.target.files?.[0]);
                   e.target.value = '';
@@ -241,8 +242,14 @@ export default function Sidebar(p: SidebarProps) {
           {t('downloadSticker')}
         </a>
         {target.printPng ? (
-          <button type="button" className="tile" disabled={!p.stickerUrl || p.exportingPng} onClick={p.onExportPng}>
-            {p.exportingPng ? t('rendering') : t('downloadPng')}
+          <button
+            type="button"
+            className="tile"
+            disabled={!p.stickerUrl || p.exportingPng}
+            title={p.pngPlan ? t('pngSize', { w: p.pngPlan.width, h: p.pngPlan.height }) : undefined}
+            onClick={p.onExportPng}
+          >
+            {p.exportingPng ? t('rendering') : t('downloadPng', { dpi: Math.round(p.pngPlan?.dpi ?? 300) })}
           </button>
         ) : null}
         <a className="tile" href={p.cutUrl ?? undefined} download="cutline.svg" aria-disabled={!p.cutUrl}>

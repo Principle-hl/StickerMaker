@@ -43,7 +43,7 @@ Everything runs client-side. Nothing is uploaded anywhere.
 | --- | --- |
 | `sticker.svg` | `<g id="Print">` with the fill (`id="Bleed"` or `id="Fill"`) and the artwork, then the cut path (`id="CutContour"`, magenta stroke) when the target keeps it. Page size in mm. |
 | `cutline.svg` | The cut path alone, same page size, so the two register. |
-| `print.png` | Fill plus artwork at 300 dpi, transparent outside, no cut line. Offered for print-then-cut targets. |
+| `print.png` | Fill plus artwork, transparent outside, no cut line, with the physical size written into the file. 300 dpi for SVG artwork; a PNG is copied pixel for pixel at its own resolution (never below 300 dpi). Offered for print-then-cut targets. |
 
 For VersaWorks, RasterLink, Onyx and Caldera, open `sticker.svg` in Illustrator,
 apply the `CutContour` spot swatch to the cut path and save as PDF or EPS. A

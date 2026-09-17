@@ -115,6 +115,7 @@ export default function App() {
         cutUrl={result.cutUrl}
         onExportPng={() => void result.exportPng()}
         exportingPng={result.exportingPng}
+        pngPlan={result.pngPlan}
         onInstall={install.canInstall ? install.prompt : null}
       />
       <div className="workspace">

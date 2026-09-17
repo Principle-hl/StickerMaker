@@ -189,7 +189,8 @@ export function artworkElement(art: Artwork): string {
 export async function sourceFromFile(file: File): Promise<Source | null> {
   const isSvg = file.type === 'image/svg+xml' || /\.svg$/i.test(file.name);
   if (isSvg) return { kind: 'svg', text: await file.text() };
-  if (/^image\//.test(file.type)) {
+  // Some browsers and drag sources report no MIME type; trust the extension then.
+  if (/^image\//.test(file.type) || /\.(png|webp|jpe?g|gif|bmp|avif)$/i.test(file.name)) {
     const dataUrl = await new Promise<string>((res, rej) => {
       const r = new FileReader();
       r.onload = () => res(r.result as string);

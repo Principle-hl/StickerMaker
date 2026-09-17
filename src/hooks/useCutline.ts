@@ -3,8 +3,8 @@ import { artworkSvg, loadArtwork } from '../lib/artwork';
 import type { Artwork, Source } from '../lib/artwork';
 import { rasterGeometry, rasterize } from '../lib/cutline';
 import type { RasterInfo, ViewBox } from '../lib/cutline';
-import { cutlineSvg, downloadBlob, printPng, stickerSvg } from '../lib/export';
-import type { StickerDoc } from '../lib/export';
+import { cutlineSvg, downloadBlob, printPlan, printPng, stickerSvg } from '../lib/export';
+import type { PrintPlan, StickerDoc } from '../lib/export';
 import { targetById } from '../lib/targets';
 import { SUPERSEDED, Tracer } from '../lib/tracer';
 import type { TraceOutput } from '../lib/tracer';
@@ -65,9 +65,11 @@ export interface CutlineResult {
   strokeWidth: number;
   stickerUrl: string | null;
   cutUrl: string | null;
-  /** Renders and downloads the print layer as a 300 dpi PNG. */
+  /** Renders and downloads the print layer as a PNG at print resolution or the raster's own, whichever is higher. */
   exportPng: () => Promise<void>;
   exportingPng: boolean;
+  /** Size and dpi the print PNG will have. */
+  pngPlan: PrintPlan | null;
 }
 
 const message = (err: unknown) => (err instanceof Error ? err.message : String(err));
@@ -284,6 +286,7 @@ export function useCutline(source: Source | null, widthMmOverride: number | null
     stickerUrl: urls?.sticker ?? null,
     cutUrl: urls?.cut ?? null,
     exportPng,
+    pngPlan: doc ? printPlan(doc) : null,
     exportingPng,
   };
 }
